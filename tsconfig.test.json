@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es6",
+    "sourceMap": true,
+    "outDir": "./test"
+  },
+  "exclude": [
+    "node_modules","built","dist","test"
+  ],
+  "files": [
+    "typings/tsd.d.ts",
+    "src/all_tests.ts"
+  ]
+}

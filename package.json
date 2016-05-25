@@ -1,0 +1,23 @@
+{
+  "name": "nedb_",
+  "version": "1.0.0",
+  "description": "",
+  "main": "built/index.js",
+  "scripts": {
+    "test": "node --harmony test/all_tests.js",
+    "build": "npm run build-src && npm run build-test",
+    "build-src": "tsc -p .",
+    "build-test": "tsc -p tsconfig.test.json"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "lodash": "^4.13.1",
+    "nedb": "^1.8.0",
+    "sqlite3": "^3.1.4",
+    "winston": "^2.2.0"
+  },
+  "devDependencies": {
+    "tape": "^4.5.1"
+  }
+}
