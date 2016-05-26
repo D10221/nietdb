@@ -11,6 +11,5 @@
   "files": [
     "typings/tsd.d.ts",
     "src/all_test.ts",
-    "src/db_test.ts"
-  ]
+    "src/db_test.ts"]
 }

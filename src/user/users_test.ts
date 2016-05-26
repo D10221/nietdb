@@ -62,6 +62,6 @@ function run(){
     })
 }
 
-import { drop } from '../db'
+import { drop } from '../db';
 
 drop().then(run).catch(e=>{ throw e;});

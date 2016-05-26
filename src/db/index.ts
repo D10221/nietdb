@@ -2,9 +2,9 @@ import * as _ from 'underscore';
 
 import * as sqlite3 from 'sqlite3';
 
-import logger from './logger'
+import logger from '../logger'
 
-import {Lazy} from "./Lazy";
+import * as lazy from "../lazy";
 
 import {Database} from "sqlite3";
 
@@ -31,9 +31,9 @@ export var drop = ()=> new Promise((rs,rj)=>{
     }
 });
 
-export let db = new Lazy<Database>(()=> new Database(dbPath));
+export let db = new lazy.Lazy<Database>(()=> new Database(dbPath));
 
-export function exec(scripts:string[]) : Promise<any>[] {
+export function exec(...scripts:string[]) : Promise<any>[] {
 
     return scripts.map(script=> new Promise((rs,rj)=>{
         db.value.serialize(()=>{

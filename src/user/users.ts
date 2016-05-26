@@ -8,8 +8,6 @@ import {User} from "./user";
 
 import * as _ from 'underscore';
 
-
-
 var inited = false;
 
 let onError = x=> e=> logger.error(`users: ${x}, error: ${e}`);
@@ -18,7 +16,7 @@ let ok = x => y => logger.info(`init users: ${x}, ok:  ${y}`) ;
 
 var script = fs.readFileSync(
     //TODO: db.path().value
-    process.cwd() + '/src/user/user.sql', 'utf-8'
+    process.cwd() + '/sqlScripts/user/user.sql', 'utf-8'
 );
 
 function init(): Promise<any> {
@@ -29,7 +27,7 @@ function init(): Promise<any> {
     
     inited = true;
 
-    return Promise.all(db.exec(script.split('<!--GO-->')))
+    return Promise.all(db.exec(...script.split('<!--GO-->')))
         .then(ok)
         .catch(onError('init'));
 }

@@ -6,9 +6,7 @@
   "scripts": {
     "postinstall": "tsd install",
     "test": "npm run build-test && mocha",
-    "build": "npm run build-src && npm run build-test",
-    "build-src": "tsc -p .",
-    "build-test": "tsc -p tsconfig.test.json"
+    "build": "tsc -p ."
   },
   "author": "",
   "license": "ISC",

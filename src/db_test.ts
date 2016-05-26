@@ -1,5 +1,4 @@
 
-
 import * as chai from 'chai';
 
 let assert = chai.assert;
@@ -27,7 +26,7 @@ function run(){
 
             var scripts = ["insert into xxx zzz", createTable];
 
-            await Promise.all(exec(scripts))
+            await Promise.all(exec(...scripts))
                 .then(()=>{
                     setError(false);
                 })
@@ -57,7 +56,7 @@ function run(){
 
             var scripts = [createTable, selectTable];
 
-            await Promise.all(exec(scripts))
+            await Promise.all(exec(...scripts))
                 .then(()=>{
                     setError(false);
                 })
