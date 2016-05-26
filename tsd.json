@@ -5,20 +5,26 @@
   "path": "typings",
   "bundle": "typings/tsd.d.ts",
   "installed": {
-    "tape/tape.d.ts": {
-      "commit": "a5c07a6098b3b934380c13bb575d4ea5f3d73ffd"
-    },
     "node/node.d.ts": {
       "commit": "8d252184e421915fbc9f56a5debcb098e0d2d68d"
     },
     "sqlite3/sqlite3.d.ts": {
       "commit": "a5c07a6098b3b934380c13bb575d4ea5f3d73ffd"
     },
-    "lodash/lodash.d.ts": {
-      "commit": "8d252184e421915fbc9f56a5debcb098e0d2d68d"
-    },
     "winston/winston.d.ts": {
       "commit": "8d252184e421915fbc9f56a5debcb098e0d2d68d"
+    },
+    "mocha/mocha.d.ts": {
+      "commit": "7ad4e09016898d9c4837e250121fef2aedbecaaa"
+    },
+    "assertion-error/assertion-error.d.ts": {
+      "commit": "7ad4e09016898d9c4837e250121fef2aedbecaaa"
+    },
+    "chai/chai.d.ts": {
+      "commit": "7ad4e09016898d9c4837e250121fef2aedbecaaa"
+    },
+    "underscore/underscore.d.ts": {
+      "commit": "7ad4e09016898d9c4837e250121fef2aedbecaaa"
     }
   }
 }

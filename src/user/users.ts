@@ -6,9 +6,9 @@ import logger from '../logger';
 
 import {User} from "./user";
 
-import * as _ from 'lodash';
+import * as _ from 'underscore';
 
-import LoChain = _.LoDashExplicitArrayWrapper;
+
 
 var inited = false;
 
@@ -34,7 +34,7 @@ function init(): Promise<any> {
         .catch(onError('init'));
 }
 
-export async function getAll():Promise<LoChain<User>> {
+export async function getAll():Promise<_Chain<User>> {
 
     await init();
 
@@ -43,7 +43,7 @@ export async function getAll():Promise<LoChain<User>> {
             _.chain(x));
 }
 
-export async function getWhere(w:string):Promise<LoChain<User>>{
+export async function getWhere(w:string):Promise<_Chain<User>>{
     await init();
     return db.getAsync<User>(`select * from USER where ${w}`)
         .then( x=> _.chain(x));

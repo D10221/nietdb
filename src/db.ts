@@ -1,4 +1,4 @@
-import * as _ from 'lodash';
+import * as _ from 'underscore';
 
 import * as sqlite3 from 'sqlite3';
 
