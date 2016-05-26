@@ -5,3 +5,4 @@ test/
 typings/
 *.log
 *.zip
+*.db

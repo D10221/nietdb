@@ -2,7 +2,7 @@ import * as fs from 'fs';
 
 import * as db from '../db';
 
-import logger from '../../logger';
+import logger from '../logger';
 
 import {User} from "./user";
 
@@ -12,11 +12,14 @@ import LoChain = _.LoDashExplicitArrayWrapper;
 
 var inited = false;
 
-let onError = x=> e=> logger.error(`users: ${x}, error:  ${e}`);
+let onError = x=> e=> logger.error(`users: ${x}, error: ${e}`);
 
 let ok = x => y => logger.info(`init users: ${x}, ok:  ${y}`) ;
 
-var script = fs.readFileSync('./src/db/user/user.sql', 'utf-8');
+var script = fs.readFileSync(
+    //TODO: db.path().value
+    process.cwd() + '/src/user/user.sql', 'utf-8'
+);
 
 function init(): Promise<any> {
 
@@ -26,17 +29,18 @@ function init(): Promise<any> {
     
     inited = true;
 
-    console.log('Init');
-
-    return db.exec(script.split('<!--GO-->'))
+    return Promise.all(db.exec(script.split('<!--GO-->')))
         .then(ok)
         .catch(onError('init'));
 }
 
 export async function getAll():Promise<LoChain<User>> {
+
     await init();
-   
-    return db.getAsync<User>('select * from USER').then( x =>_.chain(x));
+
+    return db.getAsync<User>('select * from USER')
+        .then( x =>
+            _.chain(x));
 }
 
 export async function getWhere(w:string):Promise<LoChain<User>>{
