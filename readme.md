@@ -1,1 +1,1 @@
-Typed Repoish node's _.chained Sqlite wrapping/proxying
+Typed Repoish node's _.chained Sqlite async wrapping/proxy
