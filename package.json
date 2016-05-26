@@ -1,10 +1,10 @@
 {
-  "name": "nedb_",
+  "name": "nietdb",
   "version": "1.0.0",
   "description": "",
   "main": "built/index.js",
   "scripts": {
-    "test": "node --harmony test/all_tests.js",
+    "test": "mocha",
     "build": "npm run build-src && npm run build-test",
     "build-src": "tsc -p .",
     "build-test": "tsc -p tsconfig.test.json"
