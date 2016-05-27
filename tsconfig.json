@@ -3,7 +3,9 @@
     "module": "commonjs",
     "target": "es6",
     "sourceMap": true,
-    "outDir": "./built"
+    "outDir": "./built",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   },
   "exclude": [
     "node_modules","built","dist","test"

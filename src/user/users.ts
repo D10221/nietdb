@@ -16,7 +16,7 @@ let ok = x => y => logger.info(`init users: ${x}, ok:  ${y}`) ;
 
 var script = fs.readFileSync(
     //TODO: db.path().value
-    process.cwd() + '/sqlScripts/user/user.sql', 'utf-8'
+    process.cwd() + '/sql-scripts/user/user.sql', 'utf-8'
 );
 
 function init(): Promise<any> {
