@@ -1,17 +1,17 @@
 import * as mapper from './db/mapper';
 
-import {tableMeta, columnMeta, getMetaTable, MetaColumn, MetaTable} from "./db/metadata";
+import {table, column, getMetaTable, MetaColumn, MetaTable} from "./db/metadata";
 
 import {assert} from 'chai';
 
 
-@tableMeta({name: 'xtype'})
+@table({name: 'xtype'})
 class XType {
 
-    @columnMeta({name: 'idx', attr: ['key']})
+    @column({name: 'idx', attr: ['key']})
     id:number = 0;
 
-    @columnMeta({name: 'xname', type: 'text'})
+    @column({name: 'xname', type: 'text'})
     xname:string = "!";
 }
 

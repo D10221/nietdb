@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import * as chai from 'chai';
-import {columnMeta, tableMeta, MetaColumn, MetaTable, getMetaTable, getMetaColumn} from "./db/metadata";
+import {column, table, MetaColumn, MetaTable, getMetaTable, getMetaColumn} from "./db/metadata";
 import {Lazy} from "./lazy/index";
 let assert = chai.assert;
 
@@ -8,13 +8,13 @@ interface IID {
     id?: any;
 }
 
-@tableMeta( {name: 'xKlass'})
+@table( {name: 'xKlass'})
 class Klass implements IID {
     
-    @columnMeta({name: 'xprop'})
+    @column({name: 'xprop'})
     prop:string = "";
     
-    @columnMeta({name:'xother'})
+    @column({name:'xother'})
     other:number = 0 ;
 }
 

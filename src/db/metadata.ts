@@ -21,13 +21,13 @@ export interface MetaTable {
 
 
 
-export function tableMeta(meta:MetaTable) {
+export function table(meta:MetaTable) {
     return (target:any)=>{
         Reflect.defineMetadata('meta:table', meta, target);
     }
 }
 
-export function columnMeta(meta:MetaColumn) {
+export function column(meta:MetaColumn) {
     return (target:any, key:string) => {
         meta.prop = meta.prop || key;
         Reflect.defineMetadata('meta:table', meta , target, key);

@@ -1,12 +1,12 @@
 import * as chai from 'chai';
 
-import logger from '../logger';
+import logger from './logger';
 
 let assert = chai.assert;
 
-import * as users from './users';
+import * as users from './user/users';
 
-import {User} from "./user";
+import {User} from "./user/user";
 
 function run(){
 
@@ -62,6 +62,6 @@ function run(){
     })
 }
 
-import { drop } from '../db';
+import { drop } from './db';
 
 drop().then(run).catch(e=>{ throw e;});
