@@ -8,38 +8,43 @@ import logger from '../logger';
 
 import * as _ from 'underscore';
 
-import {MetaTable, getMetaTable} from "./metadata";
+import * as m from "./metadata";
 
 let onError = x=> e=> logger.error(`Ts: ${x}, error: ${e}`);
 
 let ok = x => y => logger.info(`init Ts: ${x}, ok:  ${y}`);
 
-
-export function init(meta:MetaTable,reader?:(sKey)=> string, writer?:(sKey)=> Promise<any>){
+/***
+ * 
+ * @param meta
+ * @param reader , <-- sql cript
+ * @param writer   --> toSql
+ */
+export function init(meta:m.MetaTable,reader?:(sKey)=> string, writer?:(sKey)=> Promise<any>){
     initializer.tSetup(meta.name,reader,writer)
         .value
         .then(result => logger.debug(`init ${meta.name}, ok`))
         .catch(onError(`${meta.name}: init: `));
 }
 
-export /*async*/ function getAll<T>(meta:MetaTable):Promise<_Chain<T>> {
+export /*async*/ function getAll<T>(meta:m.MetaTable):Promise<_Chain<T>> {
     //await init(meta);
     return db.getAsync<T>(mapper.getSelect(meta))
         .then(x =>
             _.chain(x));
 }
 
-export /*async*/ function getWhere<T>(meta:MetaTable, w:string):Promise<_Chain<T>> {
+export /*async*/ function getWhere<T>(meta:m.MetaTable, w:string):Promise<_Chain<T>> {
     //await init(meta);
     return db.getAsync<T>(`${mapper.getSelect(meta)} where ${w}`)
         .then(x=> _.chain(x));
 }
 
-export /*async*/ function insert<T>(meta:MetaTable, target:T):Promise<boolean> {
+export /*async*/ function insert<T>(meta:m.MetaTable, target:T):Promise<boolean> {
     return db.runAsync(mapper.getInsert(meta, target));
 }
 
-export /*async*/ function getById<T>(meta:MetaTable, id?:T | { id:any }):Promise<T> {
+export /*async*/ function getById<T>(meta:m.MetaTable, id?:T | { id:any }):Promise<T> {
 
     var predicate = '';
     if (id.hasOwnProperty('id')) {
@@ -52,7 +57,7 @@ export /*async*/ function getById<T>(meta:MetaTable, id?:T | { id:any }):Promise
         .then(x=> x ? x[0] : null);
 }
 
-export /*async*/ function update<T>(meta:MetaTable, target:T):Promise<any> {
+export /*async*/ function update<T>(meta:m.MetaTable, target:T):Promise<any> {
     return db.runAsync(mapper.getUpdate(meta, target));
 }
 
@@ -63,33 +68,28 @@ export interface IAdapter<T> {
     where(w:string) : Promise<_Chain<T>>;
 }
 
-export class InstanceLoader<T> {
-    constructor(private context: Object) {
 
-    }
-
-    getInstance(...args: any[]) : T {
-        var instance = Object.create(Object.prototype);
-        instance.constructor.apply(instance, args);
-        return <T> instance;
-    }
-}
-
+/***
+ * 
+ * @param target: type name or instance 
+ * @param storage: initializer's in->out , DDL -> Sql  
+ * @param initialize
+ * @returns {Promise<IAdapter<T>>}
+ */
 export async function createAdapter<T> (
-    initialize?: boolean,
-    reader?:(sKey)=> string,
-    writer?:(sKey)=> Promise<any>) : Promise<IAdapter<T>> {
+    target: string | Object,
+    storage?:{
+        reader?:(sKey)=> string,
+        writer?:(sKey)=> Promise<any>
+    }) : Promise<IAdapter<T>> {
 
-    //meta = meta || ( getMetaTable(new T()));
-    var type = new InstanceLoader<T>(this).getInstance(null);
-    
-    var meta = Reflect.getMetadata('meta:table', type );
-    
-    if (initialize != false) {
-        await
-        init(meta, reader, writer);
-    }
+    storage = storage || {};
 
+    var meta = m.getMetaTable(target);
+
+    await init(meta, storage.reader, storage.writer);
+
+    //the Adapter
     var ret = {
         all: () => getAll<T>(meta),
         insert: target=> insert<T>(meta, target),
@@ -98,6 +98,7 @@ export async function createAdapter<T> (
         where: (w)=> getWhere<T>(meta, w)
     };
 
+    //TODO:
     return new Promise<IAdapter<T>>((rs,rj)=> {
         rs(ret);
     });

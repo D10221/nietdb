@@ -39,19 +39,16 @@ describe('adapter',()=>{
 
     it('works',async (done)=>{
         
-        await db.exec(createTable, insertTestData);
-
         var xtype = new XType();
 
         xtype.xtypeName = "x";
+        
+        var xtypes = await adapter.createAdapter<XType>(xtype,{
+            reader: (k)=> createTable,
+            writer: (k)=> Promise.all(db.exec(createTable, insertTestData))}
+        );
 
-        //var type = new adapter.InstanceLoader<XType>(this).getInstance(null);
-        //var meta = Reflect.getMetadata('meta:table', XType );
-
-        //END: Can't get prop's metadata without instance , then makes no sense
-        var a = await adapter.createAdapter<XType>(false);
-
-        var result = await a.all();
+        var result = await xtypes.all();
 
         var value = result.first().value();
 

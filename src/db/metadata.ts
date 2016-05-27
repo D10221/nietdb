@@ -6,11 +6,20 @@ export interface MetaColumn {
      * none, key, notMapped, readOnly
      */
     attr?:string[];
-    
+
+    /***
+     * text,number, date ...  
+     */
     type?:string;
-    
+
+    /***
+     * column name 
+     */
     name:string;
-    
+
+    /***
+     * object's property to map column name to ...
+     */
     prop?:string;
 }
 
@@ -18,8 +27,6 @@ export interface MetaTable {
     name:string;
     columns?:MetaColumn[];
 }
-
-
 
 export function table(meta:MetaTable) {
     return (target:any)=>{
@@ -45,8 +52,15 @@ export function getMetaColumn(target: any, key: string) {
     return metaColumn;
 }
 
-export function getMetaTable(x:Object) : MetaTable{
+/***
+ * Get metadata from Reflect-metadata, TODO: how to get properties metadata without an instance ?  
+ */
+export function getMetaTable(x:Object|string) : MetaTable{
   
+    if(_.isString(x)){
+        throw 'not implemented';
+    }
+    
     var table = Reflect.getMetadata('meta:table', x.constructor ) as MetaTable || { name: null};
     
     table.columns = Object.keys(x)
@@ -56,3 +70,4 @@ export function getMetaTable(x:Object) : MetaTable{
     return table;
     
 }
+
