@@ -8,7 +8,9 @@ export interface MetaColumn {
     attr?:string[];
     
     type?:string;
+    
     name:string;
+    
     prop?:string;
 }
 
@@ -43,7 +45,7 @@ export function getMetaColumn(target: any, key: string) {
     return metaColumn;
 }
 
-export function getMeta( x:Object) : MetaTable{
+export function getMetaTable(x:Object) : MetaTable{
   
     var table = Reflect.getMetadata('meta:table', x.constructor ) as MetaTable || { name: null};
     

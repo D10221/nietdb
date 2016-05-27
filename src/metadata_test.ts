@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import * as chai from 'chai';
-import {columnMeta, tableMeta, MetaColumn, MetaTable, getMeta, getMetaColumn} from "./db/metadata";
+import {columnMeta, tableMeta, MetaColumn, MetaTable, getMetaTable, getMetaColumn} from "./db/metadata";
 import {Lazy} from "./lazy/index";
 let assert = chai.assert;
 
@@ -23,7 +23,7 @@ describe('metadata',()=>{
     it('works',()=>{
 
         var klass = new Klass();
-        var meta = getMeta(klass);
+        var meta = getMetaTable(klass);
         assert.equal(meta.name, 'xKlass');
         assert.equal(2, meta.columns.length);
         for(var col of meta.columns){
@@ -35,7 +35,7 @@ describe('metadata',()=>{
     
     describe('columns',()=>{
         var klass = new Klass();
-        var meta = getMeta(klass);
+        var meta = getMetaTable(klass);
 
 
     });

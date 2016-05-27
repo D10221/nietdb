@@ -5,28 +5,29 @@ import * as db from "../db";
 import {Lazy} from '../lazy';
 
 
-let _scripts = new WeakMap<string,Lazy<Promise<any>>>();
-
+let _scripts = new Map<string,Lazy<Promise<any>>>();
 
 function init(script):Promise<any> {
-
     return Promise.all(db.exec(...script.split('<!--GO-->')));
-
 }
 
-export function setup(key:string, initer?:(s)=> Promise<any>): Lazy<Promise<any>> {
+/***
+ * read from reader write to writer : once 
+ * @param key
+ * @param reader
+ * @param writer
+ * @returns {Lazy<Promise<any>>}
+ */
+export function tSetup(key:string,
+                       reader?: (sKey)=> string,
+                       writer?:(sKey)=> Promise<any>
+): Lazy<Promise<any>> {
 
-    var filename = process.cwd() + `/sql-scripts/${key}/${key}.sql`;
+    reader = reader || (sKey=> process.cwd() + `/sql-scripts/${sKey}/${sKey}.sql`);
 
-    initer = initer || init(fs.readFileSync(filename, 'utf-8'));
-
-    var script = _scripts.get(key);
-
-    if (!script) {
-
-        _scripts.set(key, new Lazy(()=> initer(filename))
-        )
-    }
-
-    return script;
+    writer = writer || (sKey=> init(fs.readFileSync(sKey, 'utf-8')));
+    var lazy = _scripts.get(key) || new Lazy(()=> writer(reader(key)));
+    _scripts.set(key, lazy);
+    
+    return lazy;
 }
