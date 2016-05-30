@@ -13,14 +13,9 @@ let _scripts = new Map<string,Lazy<Promise<any>>>();
  * @returns {Lazy<Promise<any>>}
  */
 export function tSetup(key:string,
-                       reader?: ScriptReader,
-                       writer?: SqlWriter,
-                       scriptsLocation?: string
+                       reader: ScriptReader,
+                       writer: SqlWriter
 ): Lazy<Promise<any>> {
-
-    reader = reader || new FileSystemReader(scriptsLocation||'/sql-scripts') ;
-
-    writer = writer || new SqlBatchWriter();
     
     var lazy = _scripts.get(key) || new Lazy(async ()=> {
             var s  = await reader.read(key);

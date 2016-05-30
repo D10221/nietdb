@@ -9,8 +9,10 @@ import logger from '../logger';
 import * as _ from 'underscore';
 
 import * as m from "./metadata";
-import {FileSystemReader, ScriptReader} from "./readers";
-import {SqlWriter} from "./script_writers";
+
+import {FileSystemReader, ScriptReader, CustomLocationScriptReader} from "./readers";
+
+import {SqlWriter, SqlBatchWriter} from "./script_writers";
 
 let onError = x=> e=> logger.error(`Ts: ${x}, error: ${e}`);
 
@@ -58,32 +60,25 @@ export interface IAdapter<T> {
     where(w:string) : Promise<_Chain<T>>;
 }
 
-
 /***
- * 
- * @param target: type name or instance 
- * @param storage: initializer's in->out , DDL -> Sql  
- * @param initialize
- * @returns {Promise<IAdapter<T>>}
+ *
  */
 export async function createAdapter<T extends Function> (
     target: T,
-    storage?:{
-        reader?: ScriptReader,
-        writer?: SqlWriter
-    }) : Promise<IAdapter<T>> {
+    reader?: ScriptReader,
+    writer?: SqlWriter) : Promise<IAdapter<T>> {
     
-    storage = storage || {};
-
     var meta = m.getTable(target);
 
-     var reader = meta.script ? new FileSystemReader(meta.script) : storage.reader;
-    
-    await initializer.tSetup(meta.name, reader,storage.writer)
+    reader = meta.script ? new CustomLocationScriptReader(meta.script) : (reader || new FileSystemReader('/sql-scripts') );
+
+    writer = writer || new SqlBatchWriter();
+
+    await initializer.tSetup(meta.name, reader, writer)
         .value
         .then(result => logger.debug(`init ${meta.name}, ok`))
         .catch(onError(`${meta.name}: init: `));
-    
+
    return  new Promise((r)=>{
        r({
            all: () => getAll<T>(meta),
