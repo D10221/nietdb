@@ -6,9 +6,9 @@ import * as chai from 'chai';
 
 let assert = chai.assert;
 
-import * as db from './db'
-
 import * as m from "./db/metadata";
+
+import * as readers from './db/readers';
 
 @m.table({name: 'xtype'})
 class XType {
@@ -19,6 +19,10 @@ class XType {
     @m.column({name: 'xname', type: 'text'})
     xtypeName: string  = "";
 
+    /***
+     * returns whats expected to in the db 
+     * @returns {string}
+     */
     toJson(): string {
         return JSON.stringify({
             idx: this.xtypeId,
@@ -27,13 +31,17 @@ class XType {
     }
 }
 
-var createTable = "create table  if not exists XTYPE ( " +
-    "idx INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE, " +
-    "xname text not null" +
-    ")";
-
-var insertTestData = "insert or ignore into xtype (idx , xname) values (0,'x')";
-
+var reader : readers.FileSystemReader = {
+    read: (key)=> new Promise((rs,rj)=>{
+        rs("create table  if not exists XTYPE ( " +
+            "idx INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE, " +
+            "xname text not null" +
+            ")"+ "\n" +
+            "<!--GO-->\n"+
+            "insert or ignore into xtype (idx , xname) values (0,'x')"+
+            "<!--GO-->\n");
+    })
+};
 
 describe('adapter',()=>{
 
@@ -43,10 +51,7 @@ describe('adapter',()=>{
 
         xtype.xtypeName = "x";
         
-        var xtypes = await adapter.createAdapter(XType, {
-            reader: (k)=> createTable,
-            writer: (k)=> Promise.all(db.exec(createTable, insertTestData))}
-        );
+        var xtypes = await adapter.createAdapter(XType, {reader: reader });
 
         var result = await xtypes.all();
 

@@ -5,7 +5,8 @@
     "sourceMap": true,
     "outDir": "./built",
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+    "declaration": true
   },
   "exclude": [
     "node_modules","built","dist","test"

@@ -1,5 +1,8 @@
 import * as itz from './db/initializer';
 import * as chai from 'chai';
+import *  as writers from "./db/script_writers";
+import * as readers from "./db/readers";
+
 
 let assert = chai.assert;
 
@@ -7,21 +10,26 @@ describe('initializer',()=>{
     it('works',async ()=>{
         
         var reads = 0 ; 
+
         var writes = 0;
         
-        var reader = (k) => {
-            reads++;
-            return k+"_ok";
+        var reader : readers.FileSystemReader  = {
+            read: (k) => new Promise<string>((rs,rj)=>{
+                reads++;
+                rs(k+"_ok")
+            })
         };
         
-        var writer = (s)=> new Promise((resolve,reject)=>{
-            writes++;
-            if(s=="x_ok"){
-                resolve();
-                return;
-            }
-            reject(false);
-        });
+        var writer :writers.SqlWriter = {
+            write: (s)=> new Promise((resolve,reject)=>{
+                writes++;
+                if(s=="x_ok"){
+                    resolve();
+                    return;
+                }
+                reject(false);
+            })
+        };
         
         var lazy = itz.tSetup('x', reader, writer);
         

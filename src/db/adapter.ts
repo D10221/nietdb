@@ -9,23 +9,13 @@ import logger from '../logger';
 import * as _ from 'underscore';
 
 import * as m from "./metadata";
+import {FileSystemReader, ScriptReader} from "./readers";
+import {SqlWriter} from "./script_writers";
 
 let onError = x=> e=> logger.error(`Ts: ${x}, error: ${e}`);
 
 let ok = x => y => logger.info(`init Ts: ${x}, ok:  ${y}`);
 
-/***
- * 
- * @param meta
- * @param reader , <-- sql cript
- * @param writer   --> toSql
- */
-export function init(meta:m.TableMeta, reader?:(sKey)=> string, writer?:(sKey)=> Promise<any>){
-    initializer.tSetup(meta.name,reader,writer)
-        .value
-        .then(result => logger.debug(`init ${meta.name}, ok`))
-        .catch(onError(`${meta.name}: init: `));
-}
 
 export /*async*/ function getAll<T>(meta:m.TableMeta):Promise<_Chain<T>> {
     //await init(meta);
@@ -79,15 +69,20 @@ export interface IAdapter<T> {
 export async function createAdapter<T extends Function> (
     target: T,
     storage?:{
-        reader?:(sKey) => string,
-        writer?:(sKey) => Promise<any>
+        reader?: ScriptReader,
+        writer?: SqlWriter
     }) : Promise<IAdapter<T>> {
     
     storage = storage || {};
 
     var meta = m.getTable(target);
 
-   await init(meta, storage.reader, storage.writer);
+     var reader = meta.script ? new FileSystemReader(meta.script) : storage.reader;
+    
+    await initializer.tSetup(meta.name, reader,storage.writer)
+        .value
+        .then(result => logger.debug(`init ${meta.name}, ok`))
+        .catch(onError(`${meta.name}: init: `));
     
    return  new Promise((r)=>{
        r({

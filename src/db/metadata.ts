@@ -27,6 +27,7 @@ export interface ColumnMeta {
 
 export interface TableMeta {
     name:string;
+    script?: string;
     columns?:ColumnMeta[];
 }
 
