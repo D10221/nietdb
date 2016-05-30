@@ -76,11 +76,11 @@ export function getType(target:Function|Object, key: string|symbol ) : any {
 }
 
 export function isString(x:any) : x is String {
-    return x.name == 'String' ;
+    return x && x.name && x.name.toString().toLowerCase() == 'string' ;
 }
 
 export function isDate(x:any) : x is Date {
-    return x.name == 'Date' ;
+    return x && x.name && x.name.toString().toLowerCase() == 'date' ;
 }
 
 export function isNumber(x:any) : x is Number {

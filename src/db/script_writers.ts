@@ -1,7 +1,9 @@
 import * as db from "../db";
 
 export function sqlBatchWriter(script):Promise<any> {
-    return Promise.all(db.exec(...script.split('<!--GO-->')));
+    return Promise.all(
+        db.exec(...script.split('<!--GO-->'))
+    );
 }
 
 export interface SqlWriter {

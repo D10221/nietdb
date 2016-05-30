@@ -19,7 +19,7 @@ describe('adapter',()=>{
          */
         @m.table({name: 'ntype', script:"sql-scripts/hello.sql"})
         class NType{
-
+            
         }
         
         var ntype = new NType();

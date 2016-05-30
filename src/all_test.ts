@@ -5,3 +5,5 @@ import './initializer_test';
 import './mapper_test';
 import './adapter_test';
 import './misc_test';
+import './db/viewMapper_test';
+import './cached/cached_test';

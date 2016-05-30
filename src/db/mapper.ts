@@ -1,9 +1,18 @@
 import {TableMeta, ColumnMeta, getType, isString, isDate} from "./metadata";
 
+export interface IMapper<T> {
+    getSelect(meta:TableMeta) : string;
+    getInsert(meta, target: T) : Promise<string>;
+    getKeyName(meta:TableMeta):any;
+    getKeyPredicate(meta:TableMeta, id:{id:any}):string;
+    getUpdate(meta:TableMeta, target: T ):string ;
+}
+
 
 function any<T>(many:T[], predicate:(t:T)=> boolean):boolean {
     return many ? many.filter(predicate).length > 0 : false;
 }
+
 export function isReadOnly(k:string) {
     return any(['readonly', 'key', 'notMapped'], x=> x == k);
 }
@@ -32,12 +41,12 @@ export function getSelect(meta:TableMeta):string {
     return `select ${allReadableColumns(meta)} from ${meta.name}`
 }
 
-export function getInsertColumns(meta:TableMeta):string {
+export function getInsertColumnNames(meta:TableMeta):string {
     return allWritableColumnNames(meta).join(',')
 }
 
 export function getInsert(meta:TableMeta, target:Object):string {
-    return `INSERT INTO ${meta.name} (${getInsertColumns(meta)}) VALUES (${getValues(meta, target, canWrite)})`;
+    return `INSERT INTO ${meta.name} (${getInsertColumnNames(meta)}) VALUES (${getValues(meta, target, canWrite)})`;
 }
 
 var getKeyColumn = function (meta:TableMeta):ColumnMeta {
@@ -69,7 +78,7 @@ export function needsQuotes  (target:Object, c:ColumnMeta) {
     return  isString(type) || isDate(type) ;
 }
 
-var getValue = function (c:ColumnMeta, target:Object):string {
+export  function getValue (c:ColumnMeta, target:Object):string {
 
     var value = target[c.prop] ? target[c.prop].toString() : 'NULL';
 
