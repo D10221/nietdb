@@ -74,6 +74,15 @@ export function getType(target:Function|Object, key: string|symbol ) : String | 
         key);
 }
 
+export function isString(x:any) : x is String {
+    return  /*typeof x == 'string' ||*/ x instanceof String || x.prototype == String || x.name == 'String' || x.name == 'string' ;
+}
+
+export function isDate(x:any) : x is String {
+    return  /*typeof x === 'date' ||*/ x instanceof Date || x.prototype == Date || x.name == 'Date' || x.name == 'date' ;
+}
+
+
 
 
 

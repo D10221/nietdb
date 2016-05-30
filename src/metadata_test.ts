@@ -36,7 +36,7 @@ describe('metadata',()=>{
 
         var type = meta.getType(k, 'prop');
 
-        assert.equal(typeof type , typeof String);
+        assert.isTrue(meta.isString(type), 'is string');
 
     });
     

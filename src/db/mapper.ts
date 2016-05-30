@@ -1,4 +1,4 @@
-import {TableMeta, ColumnMeta, getType} from "./metadata";
+import {TableMeta, ColumnMeta, getType, isString, isDate} from "./metadata";
 
 
 function any<T>(many:T[], predicate:(t:T)=> boolean):boolean {
@@ -66,7 +66,7 @@ export function getUpdate(meta:TableMeta, target:Object) {
 
 export function needsQuotes  (target:Object, c:ColumnMeta) {
     var type = getRuntimeType(target, c);
-    return  type instanceof String  || type instanceof Date ;
+    return  isString(type) || isDate(type) ;
 }
 
 var getValue = function (c:ColumnMeta, target:Object):string {
@@ -76,6 +76,7 @@ var getValue = function (c:ColumnMeta, target:Object):string {
     if (needsQuotes(target, c)) {
         return `'${value}'`;
     }
+
     return value;
 };
 
