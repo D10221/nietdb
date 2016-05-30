@@ -16,6 +16,9 @@ class Klass implements IID {
     
     @meta.column({name:'xother'})
     other:number = 0 ;
+
+    @meta.column({name: 'xdate'})
+    date: Date = new Date(Date.now());
 }
 
 describe('metadata',()=>{
@@ -26,7 +29,7 @@ describe('metadata',()=>{
         
         assert.equal(m.name, 'xKlass');
         
-        assert.equal(2, m.columns.length);
+        assert.equal(3, m.columns.length);
         
         for(var col of m.columns){
             assert.equal('x'+col.prop, col.name)
@@ -37,6 +40,8 @@ describe('metadata',()=>{
         var type = meta.getType(k, 'prop');
 
         assert.isTrue(meta.isString(type), 'is string');
+
+        assert.isTrue(meta.isDate(meta.getType(k, 'date')), 'is Date');
 
     });
     

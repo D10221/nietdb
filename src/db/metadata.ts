@@ -68,18 +68,22 @@ export function table(meta:TableMeta){
     return Reflect.metadata('x:table',meta)
 }
 
-export function getType(target:Function|Object, key: string|symbol ) : String | Number | Date | Object {
+export function getType(target:Function|Object, key: string|symbol ) : any {
     return Reflect.getMetadata('design:type',
         _.isFunction(target)  ?  (target as Function).prototype : target,
         key);
 }
 
 export function isString(x:any) : x is String {
-    return  /*typeof x == 'string' ||*/ x instanceof String || x.prototype == String || x.name == 'String' || x.name == 'string' ;
+    return x.name == 'String' ;
 }
 
-export function isDate(x:any) : x is String {
-    return  /*typeof x === 'date' ||*/ x instanceof Date || x.prototype == Date || x.name == 'Date' || x.name == 'date' ;
+export function isDate(x:any) : x is Date {
+    return x.name == 'Date' ;
+}
+
+export function isNumber(x:any) : x is Number {
+    return x.name == 'Date' ;
 }
 
 

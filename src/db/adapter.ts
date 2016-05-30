@@ -79,15 +79,16 @@ export interface IAdapter<T> {
 export async function createAdapter<T extends Function> (
     target: T,
     storage?:{
-        reader?:(sKey)=> string,
-        writer?:(sKey)=> Promise<any>
+        reader?:(sKey) => string,
+        writer?:(sKey) => Promise<any>
     }) : Promise<IAdapter<T>> {
-
+    
     storage = storage || {};
 
     var meta = m.getTable(target);
 
-    await init(meta, storage.reader, storage.writer);
+   await init(meta, storage.reader, storage.writer);
+    
    return  new Promise((r)=>{
        r({
            all: () => getAll<T>(meta),
