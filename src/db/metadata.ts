@@ -1,7 +1,9 @@
 import * as _ from "underscore";
 
+import getOwnPropertyDescriptor = Reflect.getOwnPropertyDescriptor;
 
-export interface MetaColumn {
+
+export interface ColumnMeta {
     /***
      * none, key, notMapped, readOnly
      */
@@ -10,7 +12,7 @@ export interface MetaColumn {
     /***
      * text,number, date ...  
      */
-    type?:string;
+    type?:String|Date|Number|Object;
 
     /***
      * column name 
@@ -23,51 +25,55 @@ export interface MetaColumn {
     prop?:string;
 }
 
-export interface MetaTable {
+export interface TableMeta {
     name:string;
-    columns?:MetaColumn[];
+    columns?:ColumnMeta[];
 }
 
-export function table(meta:MetaTable) {
-    return (target:any)=>{
-        Reflect.defineMetadata('meta:table', meta, target);
+
+export function getColumnKeys(target:Function) : string[] {
+    return Reflect.getMetadataKeys(target.prototype).map(x=> x.replace('x:column:', ''));
+}
+
+export function getTable(target:Function): TableMeta {
+    var meta = Reflect.getMetadata('x:table',target);
+    // everything defined with @table
+    if(meta.columns){
+        return meta;
     }
+    meta.columns = getColumns(target);
+    return meta;
 }
 
-export function column(meta:MetaColumn) {
-    return (target:any, key:string) => {
-        meta.prop = meta.prop || key;
-        Reflect.defineMetadata('meta:table', meta , target, key);
-    }
+
+export function getColumn(target:Function, key: string|symbol){
+    var meta = Reflect.getOwnMetadata(`x:column:${key}`,target.prototype);
+    meta.type = meta.type || getType(target, key);
+    return meta;
 }
 
-function isDefined (x) {
-    return!_.isUndefined(x);
+export function getColumns(target:Function) : ColumnMeta[] {
+    return getColumnKeys(target).map(k=> getColumn(target, k));
 }
 
-export function getMetaColumn(target: any, key: string) {
-    var metaColumn = Reflect.getMetadata('meta:table', target, key) as MetaColumn;
-    metaColumn.type = metaColumn.type || typeof target[key];
-
-    return metaColumn;
+export  function column(meta:ColumnMeta){
+    //defineMetadata(metadataKey: any, metadataValue: any, target: Object, targetKey: string | symbol)
+    return (target,key)=> {
+        meta.prop = key;
+        Reflect.defineMetadata(`x:column:${key}`, meta,target)
+    };
 }
 
-/***
- * Get metadata from Reflect-metadata, TODO: how to get properties metadata without an instance ?  
- */
-export function getMetaTable(x:Object|string) : MetaTable{
-  
-    if(_.isString(x)){
-        throw 'not implemented';
-    }
-    
-    var table = Reflect.getMetadata('meta:table', x.constructor ) as MetaTable || { name: null};
-    
-    table.columns = Object.keys(x)
-        .map(key => getMetaColumn(x,key))
-        .filter(isDefined);
-    
-    return table;
-    
+export function table(meta:TableMeta){
+    return Reflect.metadata('x:table',meta)
 }
+
+export function getType(target:Function|Object, key: string|symbol ) : String | Number | Date | Object {
+    return Reflect.getMetadata('design:type',
+        _.isFunction(target)  ?  (target as Function).prototype : target,
+        key);
+}
+
+
+
 

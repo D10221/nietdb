@@ -43,7 +43,7 @@ describe('adapter',()=>{
 
         xtype.xtypeName = "x";
         
-        var xtypes = await adapter.createAdapter<XType>(xtype,{
+        var xtypes = await adapter.createAdapter(XType, {
             reader: (k)=> createTable,
             writer: (k)=> Promise.all(db.exec(createTable, insertTestData))}
         );

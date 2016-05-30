@@ -1,4 +1,4 @@
-import {MetaTable, MetaColumn} from "./metadata";
+import {TableMeta, ColumnMeta, getType} from "./metadata";
 
 
 function any<T>(many:T[], predicate:(t:T)=> boolean):boolean {
@@ -8,74 +8,84 @@ export function isReadOnly(k:string) {
     return any(['readonly', 'key', 'notMapped'], x=> x == k);
 }
 
-export function canWrite(col:MetaColumn):boolean {
+export function canWrite(col:ColumnMeta):boolean {
     return !any(col.attr, isReadOnly);
 }
 
-function canRead(col:MetaColumn):boolean {
+function canRead(col:ColumnMeta):boolean {
     return !any(col.attr, k=> k in ["notMapped"]);
 }
 
-export function allWritableColumns(meta:MetaTable):MetaColumn[] {
+export function allWritableColumns(meta:TableMeta):ColumnMeta[] {
     return meta.columns.filter(canWrite);
 }
 
-export function allWritableColumnNames(meta:MetaTable):string[] {
+export function allWritableColumnNames(meta:TableMeta):string[] {
     return allWritableColumns(meta).map(col=> col.name);
 }
 
-function allReadableColumns(meta:MetaTable):string[] {
+function allReadableColumns(meta:TableMeta):string[] {
     return meta.columns.filter(canRead).map(col=> col.name);
 }
 
-export function getSelect(meta:MetaTable):string {
+export function getSelect(meta:TableMeta):string {
     return `select ${allReadableColumns(meta)} from ${meta.name}`
 }
 
-export function getInsertColumns(meta:MetaTable):string {
+export function getInsertColumns(meta:TableMeta):string {
     return allWritableColumnNames(meta).join(',')
 }
 
-export function getInsert(meta:MetaTable, target:Object):string {
+export function getInsert(meta:TableMeta, target:Object):string {
     return `INSERT INTO ${meta.name} (${getInsertColumns(meta)}) VALUES (${getValues(meta, target, canWrite)})`;
 }
 
-var getKeyColumn = function (meta:MetaTable):MetaColumn {
+var getKeyColumn = function (meta:TableMeta):ColumnMeta {
     return meta.columns.filter(m=> any(m.attr, k=> k == 'key'))[0];
 };
 
-export function getKeyName(meta:MetaTable):string {
+export function getKeyName(meta:TableMeta):string {
     var filter = getKeyColumn(meta);
     return filter ? filter.name : '';
 }
 
-export function getKeyValue(meta:MetaTable, target:Object):any {
+export function getKeyValue(meta:TableMeta, target:Object):any {
     return target[getKeyColumn(meta).prop];
 }
 
-export function getKeyPredicate(meta:MetaTable, target?:Object):string {
+export function getKeyPredicate(meta:TableMeta, target?:Object):string {
     return `${getKeyName(meta)}=${getKeyValue(meta, target)}`;
 }
 
-export function getUpdate(meta:MetaTable, target:Object) {
+export function getUpdate(meta:TableMeta, target:Object) {
 
     var map = allWritableColumns(meta).map(col=> `${col.name}=${getValue(col, target)}`).join(',');
 
     return `UPDATE ${meta.name} SET ${map} WHERE ${getKeyPredicate(meta, target)}`;
 }
 
-var getValue = function (c:MetaColumn, target:Object):string {
+export function needsQuotes  (target:Object, c:ColumnMeta) {
+    var type = getRuntimeType(target, c);
+    return  type instanceof String  || type instanceof Date ;
+}
+
+var getValue = function (c:ColumnMeta, target:Object):string {
 
     var value = target[c.prop] ? target[c.prop].toString() : 'NULL';
 
-    if (any(['string', 'text'], k=> k == c.type)) {
+    if (needsQuotes(target, c)) {
         return `'${value}'`;
     }
-
     return value;
-
 };
-export function getValues(meta:MetaTable, target:Object, predicate:(c:MetaColumn) => boolean):string {
+
+//TODO: @Cache || @Memoise
+function getRuntimeType( target,c:ColumnMeta) : String|Number|Date|Object{
+    //type from instance
+    return c.type || getType(target, c.prop);
+}
+
+export function getValues(meta:TableMeta, target:Object, predicate:(c:ColumnMeta) => boolean):string {
     return meta.columns
         .filter(predicate)
         .map(c=> getValue(c, target)).join(',');

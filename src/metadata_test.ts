@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import * as chai from 'chai';
-import {column, table, MetaColumn, MetaTable, getMetaTable, getMetaColumn} from "./db/metadata";
+import * as meta from "./db/metadata";
 import {Lazy} from "./lazy/index";
 let assert = chai.assert;
 
@@ -8,37 +8,38 @@ interface IID {
     id?: any;
 }
 
-@table( {name: 'xKlass'})
+@meta.table( {name: 'xKlass'})
 class Klass implements IID {
     
-    @column({name: 'xprop'})
+    @meta.column({name: 'xprop'})
     prop:string = "";
     
-    @column({name:'xother'})
+    @meta.column({name:'xother'})
     other:number = 0 ;
 }
 
 describe('metadata',()=>{
 
     it('works',()=>{
-
-        var klass = new Klass();
-        var meta = getMetaTable(klass);
-        assert.equal(meta.name, 'xKlass');
-        assert.equal(2, meta.columns.length);
-        for(var col of meta.columns){
+        
+        var m = meta.getTable(Klass);
+        
+        assert.equal(m.name, 'xKlass');
+        
+        assert.equal(2, m.columns.length);
+        
+        for(var col of m.columns){
             assert.equal('x'+col.prop, col.name)
         }
-        assert.equal(getMetaColumn(klass, 'prop').type, 'string');
+
+        var k = new Klass();
+
+        var type = meta.getType(k, 'prop');
+
+        assert.equal(typeof type , typeof String);
 
     });
     
-    describe('columns',()=>{
-        var klass = new Klass();
-        var meta = getMetaTable(klass);
-
-
-    });
 
 });
 

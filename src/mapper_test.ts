@@ -1,27 +1,29 @@
+import 'reflect-metadata';
+
 import * as mapper from './db/mapper';
 
-import {table, column, getMetaTable, MetaColumn, MetaTable} from "./db/metadata";
+import * as m from "./db/metadata";
 
 import {assert} from 'chai';
 
 
-@table({name: 'xtype'})
+@m.table({name: 'xtype'})
 class XType {
 
-    @column({name: 'idx', attr: ['key']})
+    @m.column({name: 'idx', attr: ['key']})
     id:number = 0;
 
-    @column({name: 'xname', type: 'text'})
+    @m.column({name: 'xname', type: String})
     xname:string = "!";
 }
 
-describe('sqlizer', ()=> {
+describe('mapper', ()=> {
 
     it('selects', ()=> {
 
         var xtype = new XType();
 
-        var meta = getMetaTable(xtype);
+        var meta = m.getTable(XType);
 
         var select = mapper.getSelect(meta);
 
@@ -29,7 +31,7 @@ describe('sqlizer', ()=> {
     });
 
     it('column canWrite', ()=> {
-        var col = {name: 'x', attr: ['key']} as MetaColumn;
+        var col = {name: 'x', attr: ['key']} as m.ColumnMeta;
         assert.equal(mapper.isReadOnly('key'), true, 'should be readonly');
         assert.equal(mapper.canWrite(col), false);
     });
@@ -42,7 +44,7 @@ describe('sqlizer', ()=> {
                     attr: ['key']
                 }
             ]
-        } as MetaTable).join(','), '');
+        } as m.TableMeta).join(','), '');
 
         assert.equal(mapper.allWritableColumnNames({
             name: 'x', columns: [
@@ -63,14 +65,22 @@ describe('sqlizer', ()=> {
                     attr: ['notMapped']
                 }
             ]
-        } as MetaTable).join(','), 'xCol');
+        } as m.TableMeta).join(','), 'xCol');
+    });
+
+    it('quotes',()=>{
+
+        assert.isTrue(mapper.needsQuotes(XType, m.getColumn(XType, 'xname')));
+
+        var instance = new XType();
+        assert.isTrue(mapper.needsQuotes(instance, m.getColumn(XType, 'xname')));
     });
 
     it('inserts', ()=> {
 
         var xtype = new XType();
 
-        var meta = getMetaTable(xtype);
+        var meta = m.getTable(XType);
 
         var insert = mapper.getInsert(meta, xtype);
 
@@ -81,7 +91,7 @@ describe('sqlizer', ()=> {
 
         var xtype = new XType();
 
-        var meta = getMetaTable(xtype);
+        var meta = m.getTable(XType);
 
         var insert = mapper.getUpdate(meta, xtype);
 
