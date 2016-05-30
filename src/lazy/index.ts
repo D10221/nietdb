@@ -1,6 +1,6 @@
 export class Lazy<T>{
 
-    private _fty;
+    private _fty : ()=> T ;
 
     private built = false;
 

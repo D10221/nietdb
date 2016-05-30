@@ -50,19 +50,27 @@ export function exec(...scripts:string[]) : Promise<any>[] {
     
 }
 
-export function runAsync<T>(sql:string, ...params:any[]):Promise<any> {
+/***
+ *
+ * @param sql
+ * @param params
+ * @returns {Promise<{result: any, changes: number}>} only when INSERT
+ */
+export function runAsync<T>(sql:string, ...params:any[]): Promise<{result: any, changes: number }> {
+    
+    return new Promise<{result: any, changes: number }> (function (resolve, reject) {
 
-    return new Promise<boolean>(function (resolve, reject) {
+        db.value.serialize(function (){
 
-        db.value.serialize(()=>{
-
-            db.value.run(sql, params, function cb(e) {
+            db.value.run(sql, params, function cb(e:Error) {
+                
                 if (e) {
                     logger.error(`sql: \n ${sql} \n${e}`);
                     reject(e);
                     return;
                 }
-                resolve(e);
+                
+                resolve({result: this.lastID, changes: this.changes });
             });
         });
     });
@@ -74,7 +82,7 @@ export function getAsync<T>(sql:string, ...params:any[]):Promise<T[]> {
 
         db.value.serialize(()=>{
 
-            db.value.all(sql, params, function cb(e,x) {
+            db.value.all(sql, params, function cb(e:Error,x: T[]) {
                 if (e) {
                     logger.error(`sql: \n ${sql} \n${e}`);
                     reject(e.message);

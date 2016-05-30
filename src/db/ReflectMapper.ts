@@ -1,7 +1,7 @@
 import * as mapper from './mapper'
 import {TableMeta} from "./metadata";
 
-export class  ReflectMapper<T> implements mapper.IMapper<T> {
+export class  ReflectMapper<T,TKey> implements mapper.IMapper<T, TKey> {
     
     getSelect =  mapper.getSelect ;
 
@@ -16,6 +16,14 @@ export class  ReflectMapper<T> implements mapper.IMapper<T> {
     
     getKeyPredicate =  mapper.getKeyPredicate ;
     
-    getUpdate =  mapper.getUpdate; 
+    getUpdate(meta: TableMeta,target: Object){
+        return new Promise<string>((rs,rj)=>{
+           try{
+               rs(mapper.getUpdate(meta,target));
+           } catch(e){
+               rj(e);
+           }
+        });
+    }
 }
 

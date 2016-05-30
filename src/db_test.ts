@@ -19,7 +19,7 @@ function run(){
 
             var callBackCount = 0 ;
 
-            let setError = value => {
+            let setError = (value:any) => {
                 error = value ;
                 callBackCount++;
             };
@@ -49,7 +49,7 @@ function run(){
 
             var callBackCount = 0 ;
 
-            let setError = value => {
+            let setError = (value:any) => {
                 error = value ;
                 callBackCount++;
             };

@@ -9,7 +9,7 @@ import * as path from 'path';
  */
 export function scriptLocator (scriptsLocation: string, postFix? :string ) : (k: string)=> Promise<string> {
 
-    let location = sKey=> postFix
+    let location = (sKey:string)=> postFix
         ? `${scriptsLocation}/${sKey}/${sKey}.${postFix}.sql`
         : `${scriptsLocation}/${sKey}/${sKey}.sql`;
 

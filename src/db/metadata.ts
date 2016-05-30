@@ -59,7 +59,7 @@ export function getColumns(target:Function) : ColumnMeta[] {
 
 export  function column(meta:ColumnMeta){
     //defineMetadata(metadataKey: any, metadataValue: any, target: Object, targetKey: string | symbol)
-    return (target,key)=> {
+    return (target:Object,key:string )=> {
         meta.prop = key;
         Reflect.defineMetadata(`x:column:${key}`, meta,target)
     };

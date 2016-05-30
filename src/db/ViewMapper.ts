@@ -4,6 +4,7 @@ import * as mapper from './mapper'
 import * as m from  "./metadata";
 import {Lazy} from "../lazy";
 import {cached} from "../cached";
+import {TableMeta} from "./metadata";
 
 
 function getScript(meta:m.TableMeta, postFix:string):Lazy<Promise<string>> {
@@ -37,7 +38,7 @@ export function mapValues(meta:m.TableMeta, target:Object, script:string):string
 /***
  * for views instead of tables
  */
-export class ViewMapper<T> implements mapper.IMapper<T> {
+export class ViewMapper<T,TKey> implements mapper.IMapper<T,TKey> {
     /*
      *  getSelect(meta:TableMeta) : string;
      getInsert(meta, target: T) : string;
@@ -53,7 +54,7 @@ export class ViewMapper<T> implements mapper.IMapper<T> {
     getSelect = mapper.getSelect;
     
     //@cached
-    getScript(meta, postFix) : Lazy<Promise<string>>{
+    getScript(meta:TableMeta, postFix:string) : Lazy<Promise<string>>{
         return getScript(meta, postFix);
     }
     
@@ -69,9 +70,12 @@ export class ViewMapper<T> implements mapper.IMapper<T> {
         return `${script} VALUES ( ${mapValues(meta, target, script)})`;
     }
 
-    getKeyName = meta => mapper.getKeyName;
+    getKeyName = (meta:TableMeta) => mapper.getKeyName;
 
-    getKeyPredicate = (meta, id) => mapper.getKeyPredicate(meta, id);
+    getKeyPredicate(meta:TableMeta, target?:Object): string {
+
+        return mapper.getKeyPredicate(meta, target );
+    };
 
 
     /***
@@ -79,5 +83,10 @@ export class ViewMapper<T> implements mapper.IMapper<T> {
      * @param meta
      * @param target
      */
-    getUpdate = (meta, target)=> mapper.getUpdate(meta, target);
+    async getUpdate (meta: TableMeta, target: Object ) : Promise<string> {
+
+        var script = await this.getScript(meta, 'update').value;
+
+        return `${script} VALUES ( ${mapValues(meta, target, script)})`;
+    };
 }

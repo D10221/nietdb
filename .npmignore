@@ -1,0 +1,11 @@
+sql-scripts/
+.idea/
+node_modules/
+built/
+test/
+typings/
+*.log
+*.zip
+*.db
+*.tgz
+

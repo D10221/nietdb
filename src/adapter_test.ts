@@ -25,7 +25,7 @@ describe('adapter',()=>{
         var ntype = new NType();
 
         var writer = {
-            write: (script)=>
+            write: (script:string)=>
                 new Promise((rs,rj)=> {
                     try{
                         //Instead of sending this to sql capture it to see if it brings the right content
@@ -40,7 +40,7 @@ describe('adapter',()=>{
         var initScript = "";
         
         var reader =  {
-            read: (x)=>
+            read: (x:string)=>
                 new Promise<string>((rs,rj)=>{
                     try{
                         initScript = 'failed, this should be called because Model has Script meta indicat5ing custom script path';

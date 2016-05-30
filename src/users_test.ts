@@ -39,7 +39,7 @@ function run(){
 
         it('getById then Insert', async (done)=>{
 
-            async function _update (u) {
+            async function _update (u:User) {
                 u.role='!';
                 await users.update(u);
                 u = await users.getById(1);

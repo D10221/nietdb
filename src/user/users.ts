@@ -10,9 +10,9 @@ import * as _ from 'underscore';
 
 var inited = false;
 
-let onError = x=> e=> logger.error(`users: ${x}, error: ${e}`);
+let onError = (x:any)=> (e:Error)=> logger.error(`users: ${x}, error: ${e}`);
 
-let ok = x => y => logger.info(`init users: ${x}, ok:  ${y}`) ;
+let ok = (x:any) => (y:any) => logger.info(`init users: ${x}, ok:  ${y}`) ;
 
 var script = fs.readFileSync(
     //TODO: db.path().value
@@ -47,11 +47,14 @@ export async function getWhere(w:string):Promise<_Chain<User>>{
         .then( x=> _.chain(x));
 }
 
-export async function insert(u:User): Promise<boolean> {
+export async function insert<TKey>(u:User): Promise<TKey> {
+    
     await init();
+    
     return db.runAsync(
         `insert into USER (name,password,email,role)
-         values ('${u.name}', '${u.password}', '${u.email}', '${u.role}')`);
+         values ('${u.name}', '${u.password}', '${u.email}', '${u.role}')`)
+        .then(x=>x.result);
 }
 
 export async function getById(id:number): Promise<User>{

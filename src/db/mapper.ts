@@ -1,11 +1,11 @@
 import {TableMeta, ColumnMeta, getType, isString, isDate} from "./metadata";
 
-export interface IMapper<T> {
+export interface IMapper<T extends Object,TKey> {
     getSelect(meta:TableMeta) : string;
-    getInsert(meta, target: T) : Promise<string>;
+    getInsert(meta:TableMeta, target: T) : Promise<string>;
     getKeyName(meta:TableMeta):any;
-    getKeyPredicate(meta:TableMeta, id:{id:any}):string;
-    getUpdate(meta:TableMeta, target: T ):string ;
+    //getKeyPredicate(meta:TableMeta, id:{id:TKey}):string;
+    getUpdate(meta:TableMeta, target: Object ):Promise<string> ;
 }
 
 
@@ -58,15 +58,15 @@ export function getKeyName(meta:TableMeta):string {
     return filter ? filter.name : '';
 }
 
-export function getKeyValue(meta:TableMeta, target:Object):any {
-    return target[getKeyColumn(meta).prop];
+export function getKeyValue<T extends Object>(meta:TableMeta, target:T):any {
+    return (target as any)[getKeyColumn(meta).prop];
 }
 
 export function getKeyPredicate(meta:TableMeta, target?:Object):string {
     return `${getKeyName(meta)}=${getKeyValue(meta, target)}`;
 }
 
-export function getUpdate(meta:TableMeta, target:Object) {
+export function getUpdate(meta:TableMeta, target:Object) : string {
 
     var map = allWritableColumns(meta).map(col=> `${col.name}=${getValue(col, target)}`).join(',');
 
@@ -80,17 +80,16 @@ export function needsQuotes  (target:Object, c:ColumnMeta) {
 
 export  function getValue (c:ColumnMeta, target:Object):string {
 
-    var value = target[c.prop] ? target[c.prop].toString() : 'NULL';
-
+    var value = (target as any)[c.prop] ? (target as any)[c.prop].toString() : 'NULL';
     if (needsQuotes(target, c)) {
         return `'${value}'`;
     }
 
     return value;
-};
+}
 
 //TODO: @Cache || @Memoise
-function getRuntimeType( target,c:ColumnMeta) : String|Number|Date|Object{
+function getRuntimeType( target: Object ,c:ColumnMeta) : String|Number|Date|Object{
     //type from instance
     return c.type || getType(target, c.prop);
 }
