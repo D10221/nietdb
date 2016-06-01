@@ -1,14 +1,17 @@
 import 'reflect-metadata';
-
+import * as path from 'path';
 import * as chai from 'chai';
-
 let assert = chai.assert;
-
 import * as m from "./db/metadata";
-
+import logger from './logger';
 import {ScriptReader} from './db/scriptio';
 import {createAdapter} from "./db/adapter/factory";
+import {SqliteEngine} from "./db/engine/SqliteEngine";
 
+function ThrowIt(e:Error){
+    logger.error(e.message);
+    throw e;
+}
 describe('adapter',()=>{
 
     it('read script from custom location',async ()=>{
@@ -50,8 +53,12 @@ describe('adapter',()=>{
                     }
                 })
         };
-        
-        var ntypes = await createAdapter(NType, /*initializer:*/{reader:reader, writer:writer });
+
+        var engine = new SqliteEngine(path.join(process.cwd(),"test.db"));
+
+        var ntypes = await createAdapter(NType, engine,
+            /*initializer:*/{reader:reader, writer:writer })
+            .catch(ThrowIt);
 
         assert.isNotNull(ntypes.all);
 
@@ -59,20 +66,7 @@ describe('adapter',()=>{
     });
 
     it('convention based script path',async ()=>{
-
-        var reader : ScriptReader = {
-            read: (key)=> new Promise((rs,rj)=>{
-                rs("create table  if not exists XTYPE ( " +
-                    "idx INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE, " +
-                    "xname text not null" +
-                    ")"+ "\n" +
-                    "<!--GO-->\n"+
-                    "insert or ignore into xtype (idx , xname) values (0,'x')"+
-                    "<!--GO-->\n");
-            })
-        };
-
-
+        
         @m.table({name: 'xtype'})
         class XType {
 
@@ -96,9 +90,27 @@ describe('adapter',()=>{
         
         var xtype = new XType();
 
-        var xtypes = await createAdapter(XType,/*initializer:*/{ reader: reader /*writer: NULL */ });
+        var engine = new SqliteEngine(path.join(process.cwd(),"test.db"));
 
-        var result = await xtypes.all();
+        var initializer = { reader: {
+            // 
+            read: (key:string)=> new Promise((rs,rj) => {
+                rs("create table  if not exists XTYPE ( " +
+                    "idx INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE, " +
+                    "xname text not null" +
+                    ")"+ "\n" +
+                    "<!--GO-->\n"+
+                    "insert or ignore into xtype (idx , xname) values (0,'x')"+
+                    "<!--GO-->\n");
+            })
+        } /*writer: NULL */ };
+
+        var xtypes = await createAdapter(XType,
+            engine,
+            initializer)
+            .catch(ThrowIt);
+
+        var result = await xtypes.all().catch(ThrowIt);
 
         var value = result.first().value();
 

@@ -10,6 +10,10 @@ export class Lazy<T>{
 
     _t :T;
 
+    get isValueCreated(): boolean {
+        return typeof this._t != 'undefined';
+    }
+    
     get value(): T {
         if(!this.built){
             this.built = true;

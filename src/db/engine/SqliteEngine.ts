@@ -10,9 +10,9 @@ export class SqliteEngine implements  Engine {
     private db: Lazy<Database>;
 
     constructor(private connectionString:string){
-
         this.db = new Lazy(()=> new Database(connectionString));
     }
+
     exec =(...scripts:string[]):Promise<Engine> => {
         var db = this.db.value;
         return Promise.all(scripts.map(script=> new Promise((rs, rj)=> {
@@ -27,7 +27,8 @@ export class SqliteEngine implements  Engine {
                 })
             })
         })))
-            .then(x=> this);
+            .then(()=> this.close())
+        .then(() => this);
     };
 
     runAsync =<T>(sql:string, ...params:any[]): Promise<{result: any, changes: number }> => {
@@ -43,6 +44,9 @@ export class SqliteEngine implements  Engine {
                     resolve({result: this.lastID, changes: this.changes });
                 });
             });
+        }).then(x => {
+            this.close();
+            return x;
         });
     };
 
@@ -58,22 +62,43 @@ export class SqliteEngine implements  Engine {
                     resolve(x);
                 });
             });
-
+        }).then(x => {
+            this.close();
+            return x;
         });
     };
 
-    drop = ()=> new Promise((rs,rj)=>{
-        try{
+    close = ()=> new Promise<Engine>((rs,rj)=> {
 
+        if (!this.db.isValueCreated) {
+            rs(this);
+            return;
+        }
+
+        this.db.value.close((e)=> {
+            if (_.isError(e)) { rj(e) }
+            else { rs(this)}}
+        );
+
+    }).then( () =>{
+        this.db = new Lazy(()=> new Database(this.connectionString));
+        return this;
+    });
+    /***
+     * drop db
+     */
+    drop : ()=> Promise<Engine> =  ()=> {
+
+        return this.close().then( x => {
+            
             fs.exists(this.connectionString, ()=> {
                 fs.unlink(this.connectionString);
                 logger.warn(`dropped: ${this.connectionString}`);
             });
 
-            rs(this);
-        }
-        catch (e){
-            rj(e);
-        }
-    })
+            this.db = new Lazy(()=> new Database(this.connectionString));
+
+            return this;
+        });
+    }
 }
