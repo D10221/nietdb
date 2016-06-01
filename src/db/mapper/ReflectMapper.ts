@@ -1,6 +1,6 @@
 import {TableMeta, ColumnMeta, isString, isDate, getType} from "../metadata";
 
-import {IMapper} from "./mapper";
+import {IMapper} from "../mapper";
 
 function any<T>(many:T[], predicate:(t:T)=> boolean):boolean {
     return many ? many.filter(predicate).length > 0 : false;

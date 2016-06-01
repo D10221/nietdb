@@ -2,10 +2,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as m from  "../metadata";
 import {Lazy} from "../../lazy";
-import {cached} from "../../cached";
 import {TableMeta} from "../metadata";
 import {getValue, getSelect, getKeyName, getKeyPredicate} from "./ReflectMapper";
-import {IMapper} from "./mapper";
+import {IMapper} from "../mapper";
 
 
 function getScript(meta:m.TableMeta, postFix:string):Lazy<Promise<string>> {

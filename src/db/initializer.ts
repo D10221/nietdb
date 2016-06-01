@@ -1,7 +1,7 @@
 import {Lazy} from '../lazy';
 
-import {ScriptReader} from "./readers";
-import {SqlWriter} from "./script_writers";
+import {ScriptReader, SqlWriter} from "./scriptio";
+
 
 let _scripts = new Map<string,Lazy<Promise<any>>>();
 

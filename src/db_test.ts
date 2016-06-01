@@ -1,9 +1,9 @@
 
 import * as chai from 'chai';
+import {SqliteEngine} from "./db/engine/SqliteEngine";
 
 let assert = chai.assert;
 
-import {exec} from './db'
 
 function run(){
 
@@ -26,7 +26,9 @@ function run(){
 
             var scripts = ["insert into xxx zzz", createTable];
 
-            await Promise.all(exec(...scripts))
+            var engine = new SqliteEngine(process.cwd()+"test.db");
+
+            await engine.exec(...scripts)
                 .then(()=>{
                     setError(false);
                 })
@@ -56,7 +58,9 @@ function run(){
 
             var scripts = [createTable, selectTable];
 
-            await Promise.all(exec(...scripts))
+            var engine = new SqliteEngine(process.cwd()+"test.db");
+            
+            await engine.exec(...scripts)
                 .then(()=>{
                     setError(false);
                 })

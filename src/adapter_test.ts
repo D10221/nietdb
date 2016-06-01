@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 
-import * as adapter from './db/adapter_fty';
+import * as adapter from './db/adapter';
 
 import * as chai from 'chai';
 
@@ -8,7 +8,7 @@ let assert = chai.assert;
 
 import * as m from "./db/metadata";
 
-import * as readers from './db/readers';
+import {ScriptReader,SqlWriter} from './db/scriptio';
 
 describe('adapter',()=>{
 
@@ -61,7 +61,7 @@ describe('adapter',()=>{
 
     it('convention based script path',async ()=>{
 
-        var reader : readers.FileSystemReader = {
+        var reader : ScriptReader = {
             read: (key)=> new Promise((rs,rj)=>{
                 rs("create table  if not exists XTYPE ( " +
                     "idx INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE, " +

@@ -1,10 +1,14 @@
-import logger from '../logger';
-import {IAdapter} from "./adapter";
-import {ReflectAdapter} from "./ReflectAdapter";
-import {SqlBatchWriter, SqlWriter} from "./script_writers";
-import {FileSystemReader, CustomLocationScriptReader, ScriptReader} from "./readers";
-import {getTable} from "./metadata";
-import * as tableInitializer from './initializer';
+import logger from '../../logger';
+import {IAdapter, ReflectAdapter} from "./ReflectAdapter";
+import {SqlWriter, ScriptReader} from "../scriptio";
+import {FileSystemReader, CustomLocationScriptReader} from "../scriptio/readers";
+import {SqlBatchWriter} from "../scriptio/writers";
+import {getTable} from "../metadata";
+import * as tableInitializer from '../initializer';
+
+import {SqliteEngine} from "../engine/SqliteEngine";
+
+import {ReflectMapper} from "../mapper/ReflectMapper";
 
 
 let onError = (x:any)=> (e:Error)=> logger.error(`Ts: ${x}, error: ${e}`);
@@ -17,11 +21,15 @@ export async function createAdapter<T extends Function, TKey>(
     initializer: { reader?:ScriptReader, writer?:SqlWriter} )
 : Promise<IAdapter<T,TKey>> {
 
+    var connectionString = process.cwd()+"/test.db";
+    
+    var engine  = new SqliteEngine(connectionString);
+    
     var meta = getTable(target);
 
     initializer = initializer || {};
     initializer.reader = meta.script ? new CustomLocationScriptReader(meta.script) : (initializer.reader || new FileSystemReader('/sql-scripts') );
-    initializer.writer = initializer.writer || new SqlBatchWriter();
+    initializer.writer = initializer.writer || new SqlBatchWriter(engine);
 
     return new Promise(async(resolve, reject)=> {
         //
@@ -31,8 +39,12 @@ export async function createAdapter<T extends Function, TKey>(
             .catch(onError(`${meta.name}: init: `));
 
         try {
+            resolve(
+                new ReflectAdapter<T,TKey>(
+                    engine, 
+                    new ReflectMapper<T,TKey>(),
+                    meta));
             
-            resolve(new ReflectAdapter<T,TKey>(meta));
         } catch (e) {
             reject(e);
         }

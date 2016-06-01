@@ -1,5 +1,6 @@
 import *  as fs from 'fs';
 import * as path from 'path';
+import {ScriptReader} from "./index";
 
 /***
  *  convention based location
@@ -44,10 +45,6 @@ export function fixedLocator (scriptPath: string) : (k: string) => Promise<strin
             resolve(data);
         })
     })
-}
-
-export interface ScriptReader {
-    read : (sKey: string)=> Promise<string> ;
 }
 
 export class FileSystemReader implements  ScriptReader {
