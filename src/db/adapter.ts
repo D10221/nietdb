@@ -1,28 +1,13 @@
 import * as db from '../db';
 
-import * as initializer from './initializer';
 
-import *  as _mapper from './mapper';
-
-import logger from '../logger';
+import *  as _mapper from './mapper/mapper';
 
 import * as _ from 'underscore';
 
 import * as m from "./metadata";
 
-import {FileSystemReader, ScriptReader, CustomLocationScriptReader} from "./readers";
-
-import {SqlWriter, SqlBatchWriter} from "./script_writers";
-
-import {TableMeta} from "./metadata";
-
-import {ReflectMapper} from "./ReflectMapper";
-
-import {IMapper, getKeyPredicate} from "./mapper";
-
-let onError = (x:any)=> (e:Error)=> logger.error(`Ts: ${x}, error: ${e}`);
-
-let ok = (x:any) => (y:any) => logger.info(`init Ts: ${x}, ok:  ${y}`);
+import {IMapper} from "./mapper/mapper";
 
 
 export /*async*/ function getAll<T,TKey>(mapper:IMapper<T,TKey>, meta:m.TableMeta):Promise<_Chain<T>> {
@@ -74,54 +59,3 @@ export interface IAdapter<T, TKey> {
     updte(t:T):Promise<boolean>;
     where(w:string):Promise<_Chain<T>>;
 }
-
-/***
- * TKey: primary key type
- */
-export async function createAdapter<T extends Function, TKey>(target:T,
-                                                              reader?:ScriptReader,
-                                                              writer?:SqlWriter):Promise<IAdapter<T,TKey>> {
-
-    var meta = m.getTable(target);
-
-    reader = meta.script ? new CustomLocationScriptReader(meta.script) : (reader || new FileSystemReader('/sql-scripts') );
-
-    writer = writer || new SqlBatchWriter();
-
-    return new Promise(async(resolve, reject)=> {
-        await initializer.tSetup(meta.name, reader, writer)
-            .value
-            .then(result => logger.debug(`init ${meta.name}, ok`))
-            .catch(onError(`${meta.name}: init: `));
-
-        try {
-            resolve(new ReflectAdapter<T,TKey>(meta));
-        } catch (e) {
-            reject(e);
-        }
-
-    }) as Promise<IAdapter<T,TKey>>;
-}
-
-export class ReflectAdapter<T,TKey> implements IAdapter<T, TKey> {
-
-    all = () => getAll<T, TKey>(this.mapper, this.meta);
-
-    insert(target:T) {
-        return insert<T,TKey>(this.mapper, this.meta, target)
-    }
-
-    updte = (target:Object)=> update<T,TKey>(this.mapper, this.meta, target);
-
-    byId = (x: TKey | IiD<TKey> ) => getById<T,TKey>(this.mapper, this.meta, x);
-
-    where = (w:string)=> getWhere<T,TKey>(this.mapper, this.meta, w);
-
-    mapper:IMapper<T,TKey>;
-
-    constructor(private meta:TableMeta, mapper?:IMapper<T,TKey>) {
-
-        this.mapper = mapper || new ReflectMapper<T,TKey>();
-    }
-}
-

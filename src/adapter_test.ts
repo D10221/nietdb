@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 
-import * as adapter from './db/adapter';
+import * as adapter from './db/adapter_fty';
 
 import * as chai from 'chai';
 
@@ -28,7 +28,7 @@ describe('adapter',()=>{
             write: (script:string)=>
                 new Promise((rs,rj)=> {
                     try{
-                        //Instead of sending this to sql capture it to see if it brings the right content
+                        //Instead of sending this to sql engine, capture it to see if it brings the right content
                         initScript = script;
                         rs(script)
                     }catch (e){
@@ -43,7 +43,7 @@ describe('adapter',()=>{
             read: (x:string)=>
                 new Promise<string>((rs,rj)=>{
                     try{
-                        initScript = 'failed, this should be called because Model has Script meta indicat5ing custom script path';
+                        initScript = 'failed, this should be called because Model has Script meta indicating custom script path';
                         rs(x)
                     }catch(e){
                         console.log(`Error: ${e.message}`);
@@ -52,9 +52,10 @@ describe('adapter',()=>{
                 })
         };
         
-        var ntypes = await adapter.createAdapter(NType,reader, writer);
+        var ntypes = await adapter.createAdapter(NType, /*initializer:*/{reader:reader, writer:writer });
 
         assert.isNotNull(ntypes.all);
+
         assert.equal(initScript, 'hello');
     });
 
@@ -96,7 +97,7 @@ describe('adapter',()=>{
         
         var xtype = new XType();
 
-        var xtypes = await adapter.createAdapter(XType,reader);
+        var xtypes = await adapter.createAdapter(XType,/*initializer:*/{ reader: reader /*writer: NULL */ }); 
 
         var result = await xtypes.all();
 

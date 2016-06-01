@@ -1,10 +1,14 @@
 import 'reflect-metadata';
 
-import * as mapper from './db/mapper';
 
 import * as m from "./db/metadata";
 
 import {assert} from 'chai';
+
+import {
+    getInsert, getSelect, isReadOnly, canWrite, allWritableColumnNames,
+    needsQuotes, getUpdate
+} from "./db/mapper/ReflectMapper";
 
 
 @m.table({name: 'xtype'})
@@ -25,19 +29,19 @@ describe('mapper', ()=> {
 
         var meta = m.getTable(XType);
 
-        var select = mapper.getSelect(meta);
+        var select = getSelect(meta);
 
-        assert.equal(select, "select idx,xname from xtype");
+        assert.equal(select, "SELECT idx,xname FROM xtype");
     });
 
     it('column canWrite', ()=> {
         var col = {name: 'x', attr: ['key']} as m.ColumnMeta;
-        assert.equal(mapper.isReadOnly('key'), true, 'should be readonly');
-        assert.equal(mapper.canWrite(col), false);
+        assert.equal(isReadOnly('key'), true, 'should be readonly');
+        assert.equal(canWrite(col), false);
     });
 
     it('allWritableColumns', ()=> {
-        assert.equal(mapper.allWritableColumnNames({
+        assert.equal(allWritableColumnNames({
             name: 'x', columns: [
                 {
                     name: 'xCol',
@@ -46,7 +50,7 @@ describe('mapper', ()=> {
             ]
         } as m.TableMeta).join(','), '');
 
-        assert.equal(mapper.allWritableColumnNames({
+        assert.equal(allWritableColumnNames({
             name: 'x', columns: [
                 {
                     name: 'xCol',
@@ -70,10 +74,10 @@ describe('mapper', ()=> {
 
     it('quotes',()=>{
 
-        assert.isTrue(mapper.needsQuotes(XType, m.getColumn(XType, 'xname')));
+        assert.isTrue(needsQuotes(XType, m.getColumn(XType, 'xname')));
 
         var instance = new XType();
-        assert.isTrue(mapper.needsQuotes(instance, m.getColumn(XType, 'xname')));
+        assert.isTrue(needsQuotes(instance, m.getColumn(XType, 'xname')));
     });
 
     it('inserts', ()=> {
@@ -82,7 +86,7 @@ describe('mapper', ()=> {
 
         var meta = m.getTable(XType);
 
-        var insert = mapper.getInsert(meta, xtype);
+        var insert = getInsert(meta, xtype);
 
         assert.equal(insert, "INSERT INTO xtype (xname) VALUES ('!')");
     });
@@ -93,7 +97,7 @@ describe('mapper', ()=> {
 
         var meta = m.getTable(XType);
 
-        var insert = mapper.getUpdate(meta, xtype);
+        var insert = getUpdate(meta, xtype);
 
         assert.equal(insert, "UPDATE xtype SET xname='!' WHERE idx=0");
     })

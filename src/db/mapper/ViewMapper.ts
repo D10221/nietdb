@@ -1,10 +1,11 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import * as mapper from './mapper'
-import * as m from  "./metadata";
-import {Lazy} from "../lazy";
-import {cached} from "../cached";
-import {TableMeta} from "./metadata";
+import * as m from  "../metadata";
+import {Lazy} from "../../lazy";
+import {cached} from "../../cached";
+import {TableMeta} from "../metadata";
+import {getValue, getSelect, getKeyName, getKeyPredicate} from "./ReflectMapper";
+import {IMapper} from "./mapper";
 
 
 function getScript(meta:m.TableMeta, postFix:string):Lazy<Promise<string>> {
@@ -21,7 +22,6 @@ function getScript(meta:m.TableMeta, postFix:string):Lazy<Promise<string>> {
     );
 }
 
-
 export function mapValues(meta:m.TableMeta, target:Object, script:string):string {
 
     var s = script;
@@ -30,28 +30,22 @@ export function mapValues(meta:m.TableMeta, target:Object, script:string):string
         .forEach(c => {
             var col = (c as m.ColumnMeta);
             var name = col.prop;
-            s = s.replace(`@${name}`, mapper.getValue(col, target));
+            s = s.replace(`@${name}`, getValue(col, target));
         });
 
     return s;
 }
+
 /***
  * for views instead of tables
  */
-export class ViewMapper<T,TKey> implements mapper.IMapper<T,TKey> {
-    /*
-     *  getSelect(meta:TableMeta) : string;
-     getInsert(meta, target: T) : string;
-     getKeyName(meta:TableMeta):any;
-     getKeyPredicate(meta:TableMeta, id:{id:any}):string;
-     getUpdate(meta:TableMeta, target: T ):string ;
-     */
+export class ViewMapper<T,TKey> implements IMapper<T,TKey> {
 
     /***
      * Select still can be done by mapping Meta-Data
      * @type {function(TableMeta): string }
      */
-    getSelect = mapper.getSelect;
+    getSelect : (meta:TableMeta) => string  = getSelect;
     
     //@cached
     getScript(meta:TableMeta, postFix:string) : Lazy<Promise<string>>{
@@ -63,30 +57,25 @@ export class ViewMapper<T,TKey> implements mapper.IMapper<T,TKey> {
      * @param meta
      * @param target
      */
-    async getInsert(meta:m.TableMeta, target:Object): Promise<string> {
-        
-        var script = await this.getScript(meta, 'insert').value;
-        
-        return `${script} VALUES ( ${mapValues(meta, target, script)})`;
+    getInsert(meta:m.TableMeta, target:Object): Promise<string> {
+
+        return this.getScript(meta, 'insert')
+            .value
+            .then(script=>
+                mapValues(meta, target, script));
     }
 
-    getKeyName = (meta:TableMeta) => mapper.getKeyName;
-
-    getKeyPredicate(meta:TableMeta, target?:Object): string {
-
-        return mapper.getKeyPredicate(meta, target );
-    };
-
+    getKeyName : (meta:TableMeta) => string  =  getKeyName;
 
     /***
      *  Update might not be possible , provide script ?
      * @param meta
      * @param target
      */
-    async getUpdate (meta: TableMeta, target: Object ) : Promise<string> {
+    getUpdate (meta: TableMeta, target: Object ) : Promise<string> {
 
-        var script = await this.getScript(meta, 'update').value;
-
-        return `${script} VALUES ( ${mapValues(meta, target, script)})`;
+        return this.getScript(meta, 'update')
+            .value //Lazy
+            .then(script=>  mapValues(meta, target, script));
     };
 }

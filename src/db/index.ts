@@ -21,7 +21,6 @@ export var drop = ()=> new Promise((rs,rj)=>{
         fs.exists(dbPath, ()=> {
             fs.unlink(dbPath);
             logger.warn(`dropped: ${dbPath}`);
-
         });
 
         rs();
@@ -47,11 +46,10 @@ export function exec(...scripts:string[]) : Promise<any>[] {
             })
         })
     }));
-    
 }
 
 /***
- *
+ * 
  * @param sql
  * @param params
  * @returns {Promise<{result: any, changes: number}>} only when INSERT

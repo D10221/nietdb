@@ -9,13 +9,13 @@ import * as path from 'path';
  */
 export function scriptLocator (scriptsLocation: string, postFix? :string ) : (k: string)=> Promise<string> {
 
-    let location = (sKey:string)=> postFix
+    let location = (sKey:string) => process.cwd() + (postFix
         ? `${scriptsLocation}/${sKey}/${sKey}.${postFix}.sql`
-        : `${scriptsLocation}/${sKey}/${sKey}.sql`;
+        : `${scriptsLocation}/${sKey}/${sKey}.sql`);
 
     return sKey => new Promise((resolve,reject)=> {
 
-        fs.readFile(process.cwd() + location(sKey), (e, data)=>{
+        fs.readFile(location(sKey), 'utf-8',(e, data)=>{
             if(e){
                 reject(e);
                 return;
@@ -30,7 +30,7 @@ export function scriptLocator (scriptsLocation: string, postFix? :string ) : (k:
  * @param scriptPath absolute or relative url , if relative . relative to CWD
  * @returns {function(any): Promise<T>}
  */
-export function fixedLocator (scriptPath: string) : (k: string)=> Promise<string> {
+export function fixedLocator (scriptPath: string) : (k: string) => Promise<string> {
 
    return sKey => new Promise((resolve,reject)=> {
 

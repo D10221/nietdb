@@ -6,7 +6,8 @@ import {SqlWriter} from "./script_writers";
 let _scripts = new Map<string,Lazy<Promise<any>>>();
 
 /***
- * read from reader a script write to sql engine
+ * called by adapter when instanciated 
+ * reads from reader a script writes to writer(engine), once
  * @param key
  * @param reader provider data to writer , a script 
  * @param writer  'what to do with whatever reader brings, default : send to sqlEngine 

@@ -1,13 +1,6 @@
-import {TableMeta, ColumnMeta, getType, isString, isDate} from "./metadata";
+import {TableMeta, ColumnMeta, isString, isDate, getType} from "../metadata";
 
-export interface IMapper<T extends Object,TKey> {
-    getSelect(meta:TableMeta) : string;
-    getInsert(meta:TableMeta, target: T) : Promise<string>;
-    getKeyName(meta:TableMeta):any;
-    //getKeyPredicate(meta:TableMeta, id:{id:TKey}):string;
-    getUpdate(meta:TableMeta, target: Object ):Promise<string> ;
-}
-
+import {IMapper} from "./mapper";
 
 function any<T>(many:T[], predicate:(t:T)=> boolean):boolean {
     return many ? many.filter(predicate).length > 0 : false;
@@ -38,7 +31,7 @@ function allReadableColumns(meta:TableMeta):string[] {
 }
 
 export function getSelect(meta:TableMeta):string {
-    return `select ${allReadableColumns(meta)} from ${meta.name}`
+    return `SELECT ${allReadableColumns(meta)} FROM ${meta.name}`
 }
 
 export function getInsertColumnNames(meta:TableMeta):string {
@@ -66,19 +59,19 @@ export function getKeyPredicate(meta:TableMeta, target?:Object):string {
     return `${getKeyName(meta)}=${getKeyValue(meta, target)}`;
 }
 
-export function getUpdate(meta:TableMeta, target:Object) : string {
+export function getUpdate(meta:TableMeta, target:Object):string {
 
     var map = allWritableColumns(meta).map(col=> `${col.name}=${getValue(col, target)}`).join(',');
 
     return `UPDATE ${meta.name} SET ${map} WHERE ${getKeyPredicate(meta, target)}`;
 }
 
-export function needsQuotes  (target:Object, c:ColumnMeta) {
+export function needsQuotes(target:Object, c:ColumnMeta) {
     var type = getRuntimeType(target, c);
-    return  isString(type) || isDate(type) ;
+    return isString(type) || isDate(type);
 }
 
-export  function getValue (c:ColumnMeta, target:Object):string {
+export function getValue(c:ColumnMeta, target:Object):string {
 
     var value = (target as any)[c.prop] ? (target as any)[c.prop].toString() : 'NULL';
     if (needsQuotes(target, c)) {
@@ -89,7 +82,7 @@ export  function getValue (c:ColumnMeta, target:Object):string {
 }
 
 //TODO: @Cache || @Memoise
-function getRuntimeType( target: Object ,c:ColumnMeta) : String|Number|Date|Object{
+function getRuntimeType(target:Object, c:ColumnMeta):String|Number|Date|Object {
     //type from instance
     return c.type || getType(target, c.prop);
 }
@@ -98,4 +91,36 @@ export function getValues(meta:TableMeta, target:Object, predicate:(c:ColumnMeta
     return meta.columns
         .filter(predicate)
         .map(c=> getValue(c, target)).join(',');
+}
+
+
+export class ReflectMapper<T,TKey> implements IMapper<T, TKey> {
+
+    getSelect:(meta:TableMeta) => string = getSelect;
+
+    getInsert(meta:TableMeta, target:Object):Promise<string> {
+        return new Promise(
+            (resolve, reject) => {
+                try {
+                    getInsert(meta, target)
+                } catch (e) {
+                    reject(e);
+                }
+            }
+        )
+    }
+
+    getKeyName:(meta:TableMeta) => string = getKeyName;
+
+    //getKeyPredicate =  getKeyPredicate ;
+
+    getUpdate(meta:TableMeta, target:Object) {
+        return new Promise<string>((rs, rj)=> {
+            try {
+                rs(getUpdate(meta, target));
+            } catch (e) {
+                rj(e);
+            }
+        });
+    }
 }

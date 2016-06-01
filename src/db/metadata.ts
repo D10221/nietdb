@@ -1,8 +1,5 @@
 import * as _ from "underscore";
 
-import getOwnPropertyDescriptor = Reflect.getOwnPropertyDescriptor;
-
-
 export interface ColumnMeta {
     /***
      * none, key, notMapped, readOnly
@@ -84,7 +81,7 @@ export function isDate(x:any) : x is Date {
 }
 
 export function isNumber(x:any) : x is Number {
-    return x.name == 'Date' ;
+    return x && x.name == 'Number' ;
 }
 
 
