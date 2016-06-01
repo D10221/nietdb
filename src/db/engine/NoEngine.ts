@@ -3,7 +3,11 @@ import {Engine} from "./";
 
 class NoEngine implements Engine {
 
+    _config : {};
+
     constructor(public connectionString: string){
+        this._config = JSON.parse(connectionString);
+
 
     }
 
@@ -25,3 +29,4 @@ class NoEngine implements Engine {
         return new Promise(null)
     }
 }
+
