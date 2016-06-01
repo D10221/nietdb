@@ -1,14 +1,13 @@
 import 'reflect-metadata';
 
-import * as adapter from './db/adapter';
-
 import * as chai from 'chai';
 
 let assert = chai.assert;
 
 import * as m from "./db/metadata";
 
-import {ScriptReader,SqlWriter} from './db/scriptio';
+import {ScriptReader} from './db/scriptio';
+import {createAdapter} from "./db/adapter/factory";
 
 describe('adapter',()=>{
 
@@ -52,7 +51,7 @@ describe('adapter',()=>{
                 })
         };
         
-        var ntypes = await adapter.createAdapter(NType, /*initializer:*/{reader:reader, writer:writer });
+        var ntypes = await createAdapter(NType, /*initializer:*/{reader:reader, writer:writer });
 
         assert.isNotNull(ntypes.all);
 
@@ -97,7 +96,7 @@ describe('adapter',()=>{
         
         var xtype = new XType();
 
-        var xtypes = await adapter.createAdapter(XType,/*initializer:*/{ reader: reader /*writer: NULL */ }); 
+        var xtypes = await createAdapter(XType,/*initializer:*/{ reader: reader /*writer: NULL */ });
 
         var result = await xtypes.all();
 

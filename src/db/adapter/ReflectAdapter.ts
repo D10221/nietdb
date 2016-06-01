@@ -6,6 +6,8 @@ import {IMapper} from "../mapper";
 
 import {TableMeta} from "../metadata";
 
+import {IiD, IAdapter} from "./index";
+
 export class ReflectAdapter<T,TKey> implements IAdapter<T, TKey> {
     
     constructor(private db:Engine, private mapper: IMapper<T,TKey>, private meta:TableMeta){
@@ -51,14 +53,4 @@ export class ReflectAdapter<T,TKey> implements IAdapter<T, TKey> {
 
 function hasId<TKey>(x:{id?:TKey}):x is IiD<TKey> {
     return x.hasOwnProperty('id')
-}
-export interface IiD<TKey> {
-    id:TKey
-}
-export interface IAdapter<T, TKey> {
-    all():Promise<_Chain<T>> ;
-    insert(t:T):Promise<TKey> ;
-    updte(t:T):Promise<boolean>;
-    where(w:string):Promise<_Chain<T>>;
-    byId(id?:TKey | { id:TKey }):Promise<T>;
 }
