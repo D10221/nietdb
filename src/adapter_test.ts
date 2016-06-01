@@ -4,65 +4,39 @@ import * as chai from 'chai';
 let assert = chai.assert;
 import * as m from "./db/metadata";
 import logger from './logger';
-import {ScriptReader} from './db/scriptio';
-import {createAdapter} from "./db/adapter/factory";
+
+import {Factory} from "./db/adapter/factory";
+
 import {SqliteEngine} from "./db/engine/SqliteEngine";
+
+import {Engine} from "./db/engine/index";
 
 function ThrowIt(e:Error){
     logger.error(e.message);
     throw e;
 }
+
 describe('adapter',()=>{
 
     it('read script from custom location',async ()=>{
-
-        /***
-         * Override Sql initializer script
-         */
+        
         @m.table({name: 'ntype', script:"sql-scripts/hello.sql"})
         class NType{
             
         }
-        
         var ntype = new NType();
-
-        var writer = {
-            write: (script:string)=>
-                new Promise((rs,rj)=> {
-                    try{
-                        //Instead of sending this to sql engine, capture it to see if it brings the right content
-                        initScript = script;
-                        rs(script)
-                    }catch (e){
-                        rj(e);
-                    }
-                })
-        };
-
-        var initScript = "";
         
-        var reader =  {
-            read: (x:string)=>
-                new Promise<string>((rs,rj)=>{
-                    try{
-                        initScript = 'failed, this should be called because Model has Script meta indicating custom script path';
-                        rs(x)
-                    }catch(e){
-                        console.log(`Error: ${e.message}`);
-                        rj(e)
-                    }
-                })
-        };
+        var engine = new SqliteEngine(":memory:");
 
-        var engine = new SqliteEngine(path.join(process.cwd(),"test.db"));
+        var fty = new Factory(engine);
 
-        var ntypes = await createAdapter(NType, engine,
-            /*initializer:*/{reader:reader, writer:writer })
+        var ntypes = await fty.makeAdapter(NType)
             .catch(ThrowIt);
 
         assert.isNotNull(ntypes.all);
 
-        assert.equal(initScript, 'hello');
+        var r = await engine.getAsync<{message:string}>("select * from greetings");
+        assert.equal(r[0].message, 'hello');
     });
 
     it('convention based script path',async ()=>{
@@ -90,24 +64,11 @@ describe('adapter',()=>{
         
         var xtype = new XType();
 
-        var engine = new SqliteEngine(path.join(process.cwd(),"test.db"));
+        var engine = await new SqliteEngine(path.join(process.cwd(),"test.db")).drop();
 
-        var initializer = { reader: {
-            // 
-            read: (key:string)=> new Promise((rs,rj) => {
-                rs("create table  if not exists XTYPE ( " +
-                    "idx INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE, " +
-                    "xname text not null" +
-                    ")"+ "\n" +
-                    "<!--GO-->\n"+
-                    "insert or ignore into xtype (idx , xname) values (0,'x')"+
-                    "<!--GO-->\n");
-            })
-        } /*writer: NULL */ };
+        var fty = new Factory(engine);
 
-        var xtypes = await createAdapter(XType,
-            engine,
-            initializer)
+        var xtypes = await fty.makeAdapter(XType)
             .catch(ThrowIt);
 
         var result = await xtypes.all().catch(ThrowIt);

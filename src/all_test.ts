@@ -6,3 +6,4 @@ import './adapter_test';
 import './misc_test';
 import './viewMapper_test';
 import './cached/cached_test';
+import "./drop_test";

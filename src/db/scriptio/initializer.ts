@@ -1,29 +1,44 @@
-import {Lazy} from '../../lazy';
 
-import {ScriptReader, SqlWriter} from "./";
+import {cached} from "../../cached/";
 
-let _scripts = new Map<string,Lazy<Promise<any>>>();
+export interface TableSchemaInitializer{
 
-/***
- * reads from reader writes to writer(engine), once by key   
- * @param key
- * @param reader provider data to writer , a script 
- * @param writer  'what to do with whatever reader brings, default : send to sqlEngine 
- * @returns {Lazy<Promise<any>>}
- */
-export function runOnce(key:string,
-                        reader: ScriptReader,
-                        writer: SqlWriter
-): Lazy<Promise<any>> {
-    
-    var lazy = _scripts.get(key) || new Lazy(async ()=> {
-            var s  = await reader.read(key);
-            return writer.write(s)
-        });
-    
-    _scripts.set(key, lazy);
-    
-    return lazy;
+    read(sKey: string):Promise<string> ;
+
+    write(script:string):Promise<any>;
+
+    run(k:string) : Promise<any> ;
 }
+
+export class Initializer implements  TableSchemaInitializer {
+
+    @cached
+    run(key:string) : Promise<any> {
+        return null;
+    };
+    read(sKey: string):Promise<string> {
+        return null;
+    };
+
+    write(script:string):Promise<any>{
+        return null;
+    };
+
+    constructor( reader : ScriptReader,  writer: SqlWriter){
+        this.read = reader.read ;
+        this.write = writer.write;
+        this.run  = (key)=>
+            this.read(key).then(s=> this.write ? this.write(s) : s );
+    }
+}
+
+
+export interface ScriptReader {
+    read (sKey: string) : Promise<string>;
+}
+export interface SqlWriter {
+    write (script:string) : Promise<any>;
+}
+
 
 

@@ -6,4 +6,5 @@ typings/
 *.log
 *.zip
 *.db
+*.db-journal
 *.tgz

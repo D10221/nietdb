@@ -1,5 +1,5 @@
 import {Engine} from "../engine";
-import {SqlWriter} from "./index";
+import {SqlWriter} from "./initializer";
 
 export class SqlBatchWriter implements SqlWriter {
 

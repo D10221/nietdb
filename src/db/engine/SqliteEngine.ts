@@ -6,11 +6,12 @@ import {Database} from "sqlite3";
 import logger  from '../../logger';
 
 export class SqliteEngine implements  Engine {
-
+    
     private db: Lazy<Database>;
 
-    constructor(private connectionString:string){
-        this.db = new Lazy(()=> new Database(connectionString));
+    constructor(public connectionString:string){
+        this.db = new Lazy(()=>
+            new Database(connectionString));
     }
 
     exec =(...scripts:string[]):Promise<Engine> => {
@@ -68,37 +69,51 @@ export class SqliteEngine implements  Engine {
         });
     };
 
-    close = ()=> new Promise<Engine>((rs,rj)=> {
+    close = ()=> new Promise<Engine>((resolve,reject)=> {
 
-        if (!this.db.isValueCreated) {
-            rs(this);
+        if (!this.db.isValueCreated ||this.inMemory) {
+            resolve(this);
             return;
         }
 
         this.db.value.close((e)=> {
-            if (_.isError(e)) { rj(e) }
-            else { rs(this)}}
+            if (_.isError(e)) {
+                reject(e)
+            }
+            else { resolve(this)}}
         );
 
-    }).then( () =>{
-        this.db = new Lazy(()=> new Database(this.connectionString));
-        return this;
+    })
+        .then( () =>{
+            if(this.inMemory) return this;
+            this.db = new Lazy(()=>
+                new Database(this.connectionString));
+            return this;
+
     });
+
+    get inMemory(): boolean {return this.connectionString == ":memory:" };
+
     /***
      * drop db
      */
-    drop : ()=> Promise<Engine> =  ()=> {
+    drop : ()=> Promise<Engine> = async ()=> {
+        return dropIfExists(this.connectionString)
+        .then(dropped=> {if(dropped){
+            this.db = new Lazy(()=>
+                new Database(this.connectionString))
+        }})
+        .then(x=> this);
+    };
+}
 
-        return this.close().then( x => {
-            
-            fs.exists(this.connectionString, ()=> {
-                fs.unlink(this.connectionString);
-                logger.warn(`dropped: ${this.connectionString}`);
-            });
-
-            this.db = new Lazy(()=> new Database(this.connectionString));
-
-            return this;
-        });
-    }
+function dropIfExists(p:string){
+    return new Promise( (rs,rj)=> {
+        fs.exists(p, ok=> {
+            if(ok){
+                fs.unlink(p)
+            }
+            rs(ok);
+        })
+    })
 }

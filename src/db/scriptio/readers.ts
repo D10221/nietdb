@@ -1,6 +1,6 @@
 import *  as fs from 'fs';
 import * as path from 'path';
-import {ScriptReader} from "./index";
+import {ScriptReader} from "./initializer";
 
 /***
  *  convention based location
@@ -47,7 +47,10 @@ export function fixedLocator (scriptPath: string) : (k: string) => Promise<strin
     })
 }
 
-export class FileSystemReader implements  ScriptReader {
+/***
+ * scriptsLocation is relative path to process cwd , its a Dir
+ */
+export class ScriptRepoReader implements  ScriptReader {
     
     read : (sKey: string)=> Promise<string> ;
     
@@ -56,7 +59,9 @@ export class FileSystemReader implements  ScriptReader {
         this.read = scriptLocator(scriptsLocation, postFix);
     }
 }
-
+/***
+ * scriptsLocation is full or relative path , its main script location , and will be used as template* 
+ */
 export class CustomLocationScriptReader implements  ScriptReader {
 
     read : (sKey: string)=> Promise<string> ;

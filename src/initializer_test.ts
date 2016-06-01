@@ -1,6 +1,9 @@
 import * as itz from './db/scriptio/initializer';
 import * as chai from 'chai';
-import {ScriptReader, SqlWriter} from "./db/scriptio/";
+import {ScriptReader} from "./db/scriptio/initializer";
+import {SqlWriter} from "./db/scriptio/initializer";
+import {Initializer} from "./db/scriptio/initializer";
+
 
 let assert = chai.assert;
 
@@ -29,19 +32,11 @@ describe('initializer',()=>{
             })
         };
         
-        var lazy = itz.runOnce('x', reader, writer);
-        
-        await lazy.value.catch(e=>{
-            throw e;
-        });
+        var x = await  new Initializer(reader, writer ).run("x");
 
         assert.equal(reads,1);
         assert.equal(writes,1);
 
-        await lazy.value.catch(e=>{
-            throw e;
-        });
-        
         assert.equal(reads,1);
         assert.equal(writes,1);
         
